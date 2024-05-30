@@ -2,15 +2,23 @@ import 'package:agazh/application/auth/auth_events.dart';
 import 'package:agazh/application/auth/auth_states.dart';
 import 'package:agazh/domain/auth/user_model.dart';
 import 'package:agazh/infrastructure/auth/auth_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthRepository authRepository = AuthRepository();
-  AuthBloc() : super(AuthIitialState()) {
+
+  static final AuthBloc _singleton = AuthBloc._();
+
+  factory AuthBloc() {
+    return _singleton;
+  }
+
+  AuthBloc._() : super(AuthIitialState()) {
     on<LoginEvent>(loginHandler);
     on<RegisterEvent>(registerHandler);
-    on<AuthIitilizeEvent>(initializeHandler);
+    on<AuthInitializeEvent>(initializeHandler);
     on<LogoutEvent>(logoutHandler);
   }
 
@@ -38,8 +46,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   registerHandler(event, emit) async {
     emit(AuthLoadingState());
     try {
+    
       await authRepository.register(
           event.username, event.email, event.password, event.role);
+
       var token = await authRepository.login(event.username, event.password);
       var prefs = await SharedPreferences.getInstance();
       prefs.setString('token', token);

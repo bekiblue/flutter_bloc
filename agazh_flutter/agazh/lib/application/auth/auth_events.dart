@@ -2,7 +2,7 @@ import 'package:agazh/domain/auth/user_model.dart';
 
 class AuthEvent {}
 
-class AuthIitilizeEvent extends AuthEvent {}
+class AuthInitializeEvent extends AuthEvent {}
 
 class LoginEvent extends AuthEvent {
   final String email;

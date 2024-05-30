@@ -2,6 +2,15 @@ import 'package:agazh/domain/auth/user_model.dart';
 import 'package:agazh/infrastructure/auth/auth_datasource.dart';
 
 class AuthRepository {
+
+  AuthRepository._();
+
+  static final singleton = AuthRepository._();
+
+  factory AuthRepository() {
+    return singleton;
+  }
+
   AuthDataSource authDataSource = AuthDataSource();
 
   Future<String> login(String username, String password) {

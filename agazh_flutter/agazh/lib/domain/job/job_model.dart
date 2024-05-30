@@ -1,12 +1,13 @@
 class Job {
   String name, description, salary;
-  int author;
+  int id, author;
   JobStatus status;
 
-  Job({required this.name, required this.description, required this.salary, required this.status, required this.author});
+  Job({this.id = 0, required this.name, required this.description, required this.salary, required this.status, required this.author});
 
-  Job fromJson(Map<String, dynamic> json) {
+  static Job fromJson(Map<String, dynamic> json) {
     return Job(
+      id: json['id'],
       name: json['name'],
       author: json['author'],
       description: json['description'],
@@ -17,6 +18,7 @@ class Job {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'author': author,
       'description': description,
