@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -11,7 +12,10 @@ from core.serializer import JobApplicationSerializer, JobSerializer, PlatformUse
 
 # Create your views here.
 def getJobs(request):
-    jobs = models.Job.objects.all()
+    if('authorId' in request.data):
+        jobs = models.Job.objects.filter(author=request.data['authorId'])
+    else:
+        jobs = models.Job.objects.all()
     serializer = JobSerializer(jobs, many=True)
     return Response(serializer.data)
 
@@ -22,7 +26,26 @@ def createJob(request):
         serializer.save()
     else:
         return Response(serializer.errors, status=400)
+    return Response(serializer.data, status=201)
+
+
+def updateJob(request):
+    job = models.Job.objects.get(id=request.data['id'])
+    serializer = JobSerializer(job, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+    else:
+        return Response(serializer.errors, status=400)
     return Response(serializer.data)
+
+
+def deleteJob(request):
+    try:
+        job = models.Job.objects.get(id=request.data['id'])
+    except models.Job.DoesNotExist:
+        return Response({'message': 'Job not found'}, status=404)
+    job.delete()
+    return Response({'message': 'Job deleted successfully'}, status=204)
 
 
 def getUsers(request):
@@ -36,10 +59,11 @@ def createUser(request):
     if serializer.is_valid():
         username = serializer.validated_data.get('username')
         password = serializer.validated_data.get('password')
+        role = serializer.validated_data.get('role')
     else:
         return Response(serializer.errors, status=400)
     user = adminModels.User.objects.create_user(username, password=password)
-    models.PlatformUser.objects.create(user=user, role='client')
+    models.PlatformUser.objects.create(user=user, role=role)
     return Response({'message': 'User created successfully'}, status=201)
 
 
@@ -55,8 +79,21 @@ def get_a_user(request, pk):
 
 
 def getApplications(request):
-    applications = models.JobApplication.objects.all()
+    user = models.PlatformUser.objects.get(id=request.data['me'])
+    if(request.data['role'] == 'client'):
+        applications = models.JobApplication.objects.filter(job__author=user)
+    else:
+        applications = models.JobApplication.objects.filter(applicant=user)
     serializer = JobApplicationSerializer(applications, many=True)
+    return Response(serializer.data)
+
+def updateApplication(request):
+    application = models.JobApplication.objects.get(id=request.data['id'])
+    serializer = JobApplicationSerializer(application, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+    else:
+        return Response(serializer.errors, status=400)
     return Response(serializer.data)
 
 def createApplication(request):
@@ -65,7 +102,16 @@ def createApplication(request):
         serializer.save()
     else:
         return Response(serializer.errors, status=400)
-    return Response(serializer.data)
+    return Response(serializer.data, status=201)
+
+
+def deleteApplication(request):
+    try:
+        application = models.JobApplication.objects.get(id=request.data['id'])
+    except models.JobApplication.DoesNotExist:
+        return Response({'message': 'Application not found'}, status=404)
+    application.delete()
+    return Response({'message': 'Application deleted successfully'}, status=204)
 
 
 
@@ -79,6 +125,12 @@ class Job(APIView):
     
     def post(self, request):
         return createJob(request)
+    
+    def put(self, request):
+        return updateJob(request)
+    
+    def delete(self, request):
+        return deleteJob(request)
     
 
 
@@ -105,6 +157,16 @@ class Application(APIView):
     def get(self, request):
         return getApplications(request)
     
+    def post(self, request):
+        return createApplication(request)
+    
+    def put(self, request):
+        return updateApplication(request)
+    
+    def delete(self, request):
+        return deleteApplication(request)
+    
+    
 
 class SignUp(APIView):
 
@@ -121,4 +183,5 @@ def me(request):
     serializer = PlatformUserSerializer(user.platformuser)
     data = serializer.data
     data['email'] = user.email
+    data['id'] = user.id
     return Response(data)

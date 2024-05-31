@@ -4,7 +4,7 @@ from .models import Job, JobApplication, PlatformUser
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model=Job
-        fields=('name','author', 'description', 'salary', 'status', 'created_at', 'updated_at')
+        fields=('id', 'name','author', 'description', 'salary', 'status', 'created_at', 'updated_at')
 
 
 class PlatformUserSerializer(serializers.ModelSerializer):
@@ -21,7 +21,7 @@ class PlatformUserSerializer(serializers.ModelSerializer):
 class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model=JobApplication
-        fields=('job', 'name', 'applicant', 'description', 'status', 'created_at', 'updated_at')
+        fields=('id', 'job', 'name', 'applicant', 'description', 'status', 'created_at', 'updated_at')
 
 
 class SignUpSerializer(serializers.Serializer):
