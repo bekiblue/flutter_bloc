@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => JobApplicationBloc())
       ],
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         routerConfig: AgazshRoute().router,
         title: 'Agazsh',
         theme: ThemeData(
